@@ -46,20 +46,19 @@ const OPTIONS = {
   layout: "inline",
   header: { title: "写作教练", subtitle: "《写作技法荟萃》131 技法 · 改稿先诊断" },
   composer: { placeholder: "贴一段你写不动的文字，说一句症状，例如「读者说像流水账」" },
-  theme: { accent: "#b4552d", radius: "14px" },
-  footer: { text: "来源：李志义、邢维《写作技法荟萃》1990" }
+  theme: { accent: "#b4552d", radius: "14px" }
 };
 
 try {
-  configure({ api: { url: API, publishableKey: PUBLISHABLE_KEY } });
   await import("https://cdn.deepraxis.com/v1/praxis-kit.js");
   await customElements.whenDefined("praxis-agent");
   const el = document.querySelector("praxis-agent");
+  // 先给 options，让元素能在 mount 时读到；再 configure 触发会话绑定
   el.setOptions(OPTIONS);
+  configure({ api: { url: API, publishableKey: PUBLISHABLE_KEY } });
   status.textContent = "";
-  el.addEventListener("praxis.session.end", () => {
-    configure({ api: { url: API, publishableKey: PUBLISHABLE_KEY } });
-  });
+  const rebind = () => configure({ api: { url: API, publishableKey: PUBLISHABLE_KEY } });
+  el.addEventListener("praxis.session.end", rebind);
   el.addEventListener("praxis.error", (e) => {
     status.textContent = "对话暂时不可用（" + (e?.detail?.code || "unknown") + "）。请刷新重试。";
   });
